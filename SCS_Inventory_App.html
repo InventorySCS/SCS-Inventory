@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCS Inventory</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #E8521A; --dark: #1A1A1A; --gray: #2B2B2B; --mid: #444;
+    --light: #F5F5F5; --white: #fff; --red: #FF4444; --red-bg: #FFE8E8;
+    --green: #2ECC71; --green-bg: #E8F8F0; --yellow: #F39C12;
+    --yellow-bg: #FEF9E7; --border: #E0E0E0; --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  body { font-family: var(--font); background: var(--dark); color: var(--dark); min-height: 100vh; }
+
+  #login-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--dark); padding:24px; }
+  .login-box { background:var(--white); border-radius:12px; padding:40px 36px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+  .login-logo { text-align:center; margin-bottom:32px; }
+  .login-logo .brand { font-size:28px; font-weight:800; color:var(--orange); letter-spacing:-1px; }
+  .login-logo .sub { font-size:12px; color:#999; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+  .login-tabs { display:flex; border:2px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:28px; }
+  .login-tab { flex:1; padding:10px; text-align:center; font-size:13px; font-weight:600; cursor:pointer; background:var(--light); color:#888; border:none; transition:all 0.2s; font-family:var(--font); }
+  .login-tab.active { background:var(--orange); color:white; }
+  .login-label { font-size:12px; font-weight:700; color:#666; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .login-input { width:100%; padding:14px 16px; border:2px solid var(--border); border-radius:8px; font-size:18px; font-weight:600; letter-spacing:2px; color:var(--dark); margin-bottom:20px; transition:border-color 0.2s; font-family:var(--font); }
+  .login-input:focus { outline:none; border-color:var(--orange); }
+  .login-btn { width:100%; padding:14px; background:var(--orange); color:white; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; letter-spacing:1px; transition:background 0.2s; font-family:var(--font); }
+  .login-btn:hover { background:#c9441a; }
+  .login-error { color:var(--red); font-size:13px; font-weight:600; text-align:center; margin-top:12px; display:none; }
+  .login-loading { color:#888; font-size:13px; text-align:center; margin-top:12px; display:none; }
+
+  #app { display:none; min-height:100vh; background:#F0F0F0; }
+  .topbar { background:var(--dark); padding:0 20px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .topbar-brand { font-size:16px; font-weight:800; color:var(--orange); letter-spacing:-0.5px; }
+  .topbar-unit { font-size:13px; color:#aaa; font-weight:600; }
+  .topbar-logout { background:none; border:1px solid #555; color:#aaa; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-family:var(--font); }
+  .topbar-logout:hover { border-color:var(--orange); color:var(--orange); }
+
+  #crew-view { padding:16px; max-width:900px; margin:0 auto; }
+  .daily-header { background:var(--white); border-radius:10px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .daily-header-left h2 { font-size:18px; font-weight:800; color:var(--dark); }
+  .daily-header-left p { font-size:13px; color:#888; margin-top:2px; }
+  .daily-meta { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .meta-field { display:flex; flex-direction:column; gap:4px; }
+  .meta-field label { font-size:10px; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:1px; }
+  .meta-field input, .meta-field select { padding:7px 10px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); font-weight:600; color:var(--dark); width:160px; background:white; }
+  .meta-field input:focus, .meta-field select:focus { outline:none; border-color:var(--orange); }
+
+  .section-label { display:flex; align-items:center; gap:10px; margin:20px 0 10px; }
+  .section-label span { font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--orange); }
+  .section-label::after { content:''; flex:1; height:2px; background:var(--orange); opacity:0.2; }
+
+  .inv-table { width:100%; border-collapse:collapse; background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .inv-table thead tr { background:var(--gray); }
+  .inv-table thead th { color:white; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:12px 14px; text-align:left; }
+  .inv-table thead th.center { text-align:center; }
+  .inv-table tbody tr { border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .inv-table tbody tr:last-child { border-bottom:none; }
+  .inv-table tbody tr.flagged { background:var(--red-bg) !important; }
+  .inv-table td { padding:11px 14px; font-size:14px; vertical-align:middle; }
+  .code-badge { display:inline-block; background:var(--orange); color:white; font-size:10px; font-weight:800; letter-spacing:1px; padding:3px 7px; border-radius:4px; }
+  .desc-cell .desc { font-weight:600; font-size:14px; }
+  .std-qty { text-align:center; font-weight:700; font-size:15px; color:var(--mid); }
+  .qty-input { width:60px; padding:7px 8px; border:2px solid var(--border); border-radius:6px; text-align:center; font-size:15px; font-weight:700; font-family:var(--font); color:var(--dark); display:block; margin:0 auto; }
+  .qty-input:focus { outline:none; border-color:var(--orange); }
+  .qty-input.over { border-color:var(--red); background:var(--red-bg); }
+  .qty-input.under { border-color:var(--yellow); background:var(--yellow-bg); }
+  .qty-input.match { border-color:var(--green); }
+  .cond-select { width:100%; padding:7px 8px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); color:var(--dark); background:white; cursor:pointer; }
+  .cond-select:focus { outline:none; border-color:var(--orange); }
+  .cond-select.damaged { border-color:var(--red); background:var(--red-bg); }
+  .notes-input { width:100%; padding:7px 8px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); color:var(--dark); }
+  .notes-input:focus { outline:none; border-color:var(--orange); }
+  .flag-indicator { font-size:18px; text-align:center; }
+
+  .submit-bar { position:sticky; bottom:0; background:var(--dark); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:20px; border-radius:10px 10px 0 0; }
+  .submit-status { font-size:13px; color:#aaa; }
+  .submit-status .flag-count { color:var(--red); font-weight:700; }
+  .submit-btn { background:var(--orange); color:white; border:none; padding:13px 32px; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; letter-spacing:1px; font-family:var(--font); transition:background 0.2s; }
+  .submit-btn:hover { background:#c9441a; }
+  .submit-btn:disabled { background:#555; cursor:not-allowed; }
+
+  #manager-view { padding:16px; max-width:1400px; margin:0 auto; }
+  .mgr-header { background:var(--white); border-radius:10px; padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .mgr-header h2 { font-size:20px; font-weight:800; color:var(--dark); }
+  .mgr-header p { font-size:13px; color:#888; margin-top:3px; }
+  .mgr-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+  .mgr-tab { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; border:2px solid var(--border); background:var(--white); color:#666; font-family:var(--font); transition:all 0.2s; }
+  .mgr-tab.active { background:var(--orange); color:white; border-color:var(--orange); }
+
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px; }
+  .stat-card { background:var(--white); border-radius:10px; padding:16px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .stat-card .num { font-size:32px; font-weight:800; color:var(--dark); line-height:1; }
+  .stat-card .num.orange { color:var(--orange); }
+  .stat-card .num.red { color:var(--red); }
+  .stat-card .num.green { color:var(--green); }
+  .stat-card .lbl { font-size:11px; font-weight:700; color:#999; letter-spacing:1px; text-transform:uppercase; margin-top:6px; }
+
+  .submission-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; margin-bottom:20px; }
+  .sub-card { background:var(--white); border-radius:10px; padding:16px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid var(--border); }
+  .sub-card.submitted { border-left-color:var(--green); }
+  .sub-card.flagged { border-left-color:var(--red); }
+  .sub-card.pending { border-left-color:#ccc; }
+  .sub-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .sub-card-unit { font-size:16px; font-weight:800; color:var(--dark); }
+  .sub-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:0.5px; }
+  .sub-badge.submitted { background:var(--green-bg); color:#1a7a46; }
+  .sub-badge.flagged { background:var(--red-bg); color:#b71c1c; }
+  .sub-badge.pending { background:#f0f0f0; color:#999; }
+  .sub-card-meta { font-size:12px; color:#888; margin-bottom:8px; }
+  .sub-flags { font-size:12px; color:var(--red); font-weight:600; }
+
+  .mgr-inv-wrap { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:20px; }
+  .mgr-inv-header { background:var(--gray); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .mgr-inv-header h3 { color:white; font-size:15px; font-weight:700; }
+  .mgr-inv-header select { padding:7px 12px; border-radius:6px; border:none; font-size:13px; font-family:var(--font); font-weight:600; cursor:pointer; }
+  .mgr-table { width:100%; border-collapse:collapse; }
+  .mgr-table thead tr { background:#f8f8f8; }
+  .mgr-table thead th { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:10px 14px; text-align:left; color:#666; border-bottom:2px solid var(--border); }
+  .mgr-table thead th.center { text-align:center; }
+  .mgr-table tbody tr { border-bottom:1px solid var(--border); }
+  .mgr-table tbody tr:last-child { border-bottom:none; }
+  .mgr-table tbody tr.flagged { background:var(--red-bg); }
+  .mgr-table td { padding:10px 14px; font-size:13px; vertical-align:middle; }
+  .mgr-table td.center { text-align:center; }
+  .edit-std { width:55px; padding:5px 6px; border:2px solid var(--border); border-radius:5px; text-align:center; font-size:14px; font-weight:700; font-family:var(--font); color:var(--dark); display:block; margin:0 auto; }
+  .edit-std:focus { outline:none; border-color:var(--orange); }
+  .save-std-btn { background:var(--orange); color:white; border:none; padding:8px 20px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font); margin:12px 20px 16px; }
+  .save-std-btn:hover { background:#c9441a; }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--dark); color:white; padding:14px 28px; border-radius:8px; font-size:14px; font-weight:600; box-shadow:0 8px 30px rgba(0,0,0,0.3); transition:transform 0.3s ease; z-index:999; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.success { border-left:4px solid var(--green); }
+  .toast.error { border-left:4px solid var(--red); }
+  .hidden { display:none !important; }
+
+  @media (max-width:600px) {
+    .inv-table thead th:nth-child(5), .inv-table td:nth-child(5) { display:none; }
+    .daily-meta { flex-direction:column; align-items:flex-start; }
+    .meta-field input, .meta-field select { width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">STAR CITY SAFETY</div>
+      <div class="sub">Traffic Control Inventory</div>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setLoginMode('crew')">Crew</button>
+      <button class="login-tab" onclick="setLoginMode('manager')">Manager</button>
+    </div>
+    <div id="crew-login-fields">
+      <label class="login-label">Truck Number</label>
+      <input class="login-input" id="truck-input" type="text" placeholder="e.g. 6238" maxlength="10" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div id="mgr-login-fields" class="hidden">
+      <label class="login-label">Manager Password</label>
+      <input class="login-input" id="mgr-pass-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error">Invalid entry. Try again.</div>
+    <div class="login-loading" id="login-loading">Connecting to SCS server...</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand">SCS</div>
+    <div class="topbar-unit" id="topbar-unit"></div>
+    <button class="topbar-logout" onclick="doLogout()">Sign Out</button>
+  </div>
+  <div id="crew-view" class="hidden"></div>
+  <div id="manager-view" class="hidden"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzvWUG6oOGINaDlNYmxM3PJ5ryqLQAviO7NKOGJVZaK-YePvxc7K2lco8GBBj3oLDWi/exec";
+const MANAGER_PASS = "SCS2026";
+
+const UNITS = [
+  "Truck 5628","Truck 4562","Truck 6464","Truck 4632",
+  "Truck 6238","Truck 1440","Truck 7032","Truck 1357",
+  "TMA 8510","TMA 8152","TMA 8550","1125 Shop"
+];
+
+const ITEMS = [
+  {cat:"Sign", code:"RWA",    desc:"Road Work Ahead"},
+  {cat:"Sign", code:"OLRA",   desc:"One Lane Road Ahead"},
+  {cat:"Sign", code:"RSA",    desc:"Rumble Strips Ahead"},
+  {cat:"Sign", code:"BPTS",   desc:"Be Prepared To Stop"},
+  {cat:"Sign", code:"FL",     desc:"Flagger Symbol"},
+  {cat:"Sign", code:"ERW",    desc:"End of Road Work"},
+  {cat:"Sign", code:"RSHCLA", desc:"Right Shoulder Closed Ahead"},
+  {cat:"Sign", code:"RSHCL",  desc:"Right Shoulder Closed"},
+  {cat:"Sign", code:"RLCA",   desc:"Right Lane Closed Ahead"},
+  {cat:"Sign", code:"DMS",    desc:"Dual Merge Symbol"},
+  {cat:"Sign", code:"DT",     desc:"Detour"},
+  {cat:"Sign", code:"RC",     desc:"Road Closed"},
+  {cat:"Sign", code:"RCA",    desc:"Road Closed Ahead"},
+  {cat:"Sign", code:"",       desc:"Left Overlays"},
+  {cat:"Sign", code:"",       desc:"Exit w/ Arrow"},
+  {cat:"Equipment", code:"",  desc:"Cones 7lbs"},
+  {cat:"Equipment", code:"",  desc:"Highway Cones 10-12lbs"},
+  {cat:"Equipment", code:"",  desc:"Cone Weights"},
+  {cat:"Equipment", code:"",  desc:"Drum Weights"},
+  {cat:"Equipment", code:"",  desc:"Stands"},
+  {cat:"Equipment", code:"",  desc:"Rumble Strips"},
+  {cat:"Equipment", code:"",  desc:"PVC Pole / Stop Paddle Pole"},
+  {cat:"Equipment", code:"",  desc:"Stop/Slow Paddle"},
+  {cat:"Equipment", code:"",  desc:"Radios"},
+  {cat:"Equipment", code:"",  desc:"Arrowboard"},
+];
+
+let standardCounts = {};
+let submissions = {};
+let currentUser = null;
+let loginMode = 'crew';
+let mgrActiveTab = 'dashboard';
+let mgrSelectedUnit = UNITS[0];
+
+// ── API CALLS ──────────────────────────────────────────────────────────────
+async function apiCall(action, data={}) {
+  const payload = { action, ...data };
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function loadStandards() {
+  try {
+    const res = await apiCall('getStandards');
+    standardCounts = {};
+    if (res.standards && res.standards.length > 1) {
+      const rows = res.standards;
+      for (let i = 1; i < rows.length; i++) {
+        const [unit, desc, qty] = rows[i];
+        if (!standardCounts[unit]) standardCounts[unit] = {};
+        standardCounts[unit][desc] = parseInt(qty) || 0;
+      }
+    }
+  } catch(e) {
+    console.log('Using local standards');
+    standardCounts = JSON.parse(localStorage.getItem('scs_standards') || '{}');
+  }
+}
+
+async function loadSubmissions() {
+  try {
+    const res = await apiCall('getSubmissions');
+    submissions = {};
+    if (res.submissions && res.submissions.length > 1) {
+      for (let i = 1; i < res.submissions.length; i++) {
+        const [date, unit, driver, session, timestamp, flagCount, itemsJson] = res.submissions[i];
+        if (!submissions[date]) submissions[date] = {};
+        submissions[date][unit] = {
+          driver, session, timestamp,
+          flagCount: parseInt(flagCount) || 0,
+          items: JSON.parse(itemsJson || '{}'),
+          submitted: true
+        };
+      }
+    }
+  } catch(e) {
+    submissions = JSON.parse(localStorage.getItem('scs_submissions') || '{}');
+  }
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getStd(unit, desc) {
+  return (standardCounts[unit] && standardCounts[unit][desc]) || 0;
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+function setLoginMode(mode) {
+  loginMode = mode;
+  document.querySelectorAll('.login-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0&&mode==='crew')||(i===1&&mode==='manager'));
+  });
+  document.getElementById('crew-login-fields').classList.toggle('hidden', mode!=='crew');
+  document.getElementById('mgr-login-fields').classList.toggle('hidden', mode!=='manager');
+  document.getElementById('login-error').style.display = 'none';
+}
+
+async function doLogin() {
+  const err = document.getElementById('login-error');
+  const loading = document.getElementById('login-loading');
+  err.style.display = 'none';
+  loading.style.display = 'block';
+
+  if (loginMode === 'manager') {
+    const pass = document.getElementById('mgr-pass-input').value;
+    if (pass === MANAGER_PASS) {
+      currentUser = 'manager';
+      await loadStandards();
+      await loadSubmissions();
+      loading.style.display = 'none';
+      showApp();
+    } else {
+      loading.style.display = 'none';
+      err.textContent = 'Incorrect password.';
+      err.style.display = 'block';
+    }
+  } else {
+    const truck = document.getElementById('truck-input').value.trim();
+    const match = UNITS.find(u => u.replace(/\D/g,'') === truck || u === truck);
+    if (match) {
+      currentUser = match;
+      await loadStandards();
+      await loadSubmissions();
+      loading.style.display = 'none';
+      showApp();
+    } else {
+      loading.style.display = 'none';
+      err.textContent = 'Truck not found. Check number and try again.';
+      err.style.display = 'block';
+    }
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('truck-input').value = '';
+  document.getElementById('mgr-pass-input').value = '';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  if (currentUser === 'manager') {
+    document.getElementById('topbar-unit').textContent = 'Manager Dashboard';
+    document.getElementById('crew-view').classList.add('hidden');
+    document.getElementById('manager-view').classList.remove('hidden');
+    renderManagerView();
+  } else {
+    document.getElementById('topbar-unit').textContent = currentUser;
+    document.getElementById('manager-view').classList.add('hidden');
+    document.getElementById('crew-view').classList.remove('hidden');
+    renderCrewView(currentUser);
+  }
+}
+
+// ── CREW VIEW ──────────────────────────────────────────────────────────────
+function renderCrewView(unit) {
+  const today = todayKey();
+  const existing = (submissions[today] && submissions[today][unit]) || null;
+
+  let html = `
+    <div class="daily-header">
+      <div class="daily-header-left">
+        <h2>${unit}</h2>
+        <p>${formatDate(today)}</p>
+      </div>
+      <div class="daily-meta">
+        <div class="meta-field">
+          <label>Driver Name</label>
+          <input type="text" id="driver-name" placeholder="Your name" value="${existing ? existing.driver : ''}">
+        </div>
+        <div class="meta-field">
+          <label>Session</label>
+          <select id="session-select">
+            <option value="start" ${(!existing||existing.session==='start')?'selected':''}>Start of Day</option>
+            <option value="end" ${existing&&existing.session==='end'?'selected':''}>End of Day</option>
+          </select>
+        </div>
+      </div>
+    </div>`;
+
+  let currentCat = null;
+  html += `<form id="inv-form">`;
+
+  ITEMS.forEach((item, idx) => {
+    if (item.cat !== currentCat) {
+      currentCat = item.cat;
+      if (idx > 0) html += `</tbody></table>`;
+      html += `<div class="section-label"><span>${item.cat==='Sign'?'Signs':'Equipment'}</span></div>
+               <table class="inv-table">
+               <thead><tr>
+                 <th>Code</th><th>Description</th>
+                 <th class="center">Standard</th>
+                 <th class="center">Count</th>
+                 <th>Condition</th><th>Notes</th>
+                 <th class="center">⚑</th>
+               </tr></thead><tbody>`;
+    }
+
+    const std = getStd(unit, item.desc);
+    const saved = existing ? existing.items[item.desc] : null;
+    const qty = saved ? saved.qty : '';
+    const cond = saved ? saved.cond : 'Good';
+    const notes = saved ? saved.notes : '';
+
+    html += `<tr id="row-${idx}">
+      <td>${item.code?`<span class="code-badge">${item.code}</span>`:'<span style="color:#ccc;font-size:12px;">—</span>'}</td>
+      <td class="desc-cell"><span class="desc">${item.desc}</span></td>
+      <td class="std-qty">${std>0?std:'—'}</td>
+      <td><input class="qty-input" type="number" min="0" id="qty-${idx}" value="${qty}"
+          data-std="${std}" data-idx="${idx}" onchange="checkQty(${idx})" oninput="checkQty(${idx})"></td>
+      <td><select class="cond-select ${cond==='Damaged'?'damaged':''}" id="cond-${idx}" onchange="checkCond(${idx})">
+        <option ${cond==='Good'?'selected':''}>Good</option>
+        <option ${cond==='Fair'?'selected':''}>Fair</option>
+        <option ${cond==='Damaged'?'selected':''}>Damaged</option>
+        <option ${cond==='Missing'?'selected':''}>Missing</option>
+      </select></td>
+      <td><input class="notes-input" type="text" id="notes-${idx}" value="${notes}" placeholder="Add note..."></td>
+      <td class="flag-indicator" id="flag-${idx}"></td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></form>
+    <div class="submit-bar">
+      <div class="submit-status"><span id="flag-summary">Fill in your counts above</span></div>
+      <button class="submit-btn" onclick="submitInventory('${unit}')">Submit</button>
+    </div>`;
+
+  document.getElementById('crew-view').innerHTML = html;
+  ITEMS.forEach((_, idx) => checkQty(idx));
+}
+
+function checkQty(idx) {
+  const qtyEl = document.getElementById(`qty-${idx}`);
+  const flagEl = document.getElementById(`flag-${idx}`);
+  const rowEl = document.getElementById(`row-${idx}`);
+  if (!qtyEl) return;
+  const std = parseInt(qtyEl.dataset.std) || 0;
+  const val = parseInt(qtyEl.value);
+  const cond = document.getElementById(`cond-${idx}`)?.value;
+  qtyEl.classList.remove('over','under','match');
+  rowEl.classList.remove('flagged');
+  if (isNaN(val) || qtyEl.value==='') { flagEl.textContent=''; updateFlagSummary(); return; }
+  let flagged = false;
+  if (std>0 && val<std) { qtyEl.classList.add('under'); flagEl.textContent='⚠️'; flagged=true; }
+  else if (std>0 && val>std) { qtyEl.classList.add('over'); flagEl.textContent='❗'; flagged=true; }
+  else if (std>0) { qtyEl.classList.add('match'); flagEl.textContent='✅'; }
+  else { flagEl.textContent=''; }
+  if (cond==='Damaged'||cond==='Missing') flagged=true;
+  if (flagged) rowEl.classList.add('flagged');
+  updateFlagSummary();
+}
+
+function checkCond(idx) {
+  const condEl = document.getElementById(`cond-${idx}`);
+  condEl.classList.toggle('damaged', condEl.value==='Damaged'||condEl.value==='Missing');
+  checkQty(idx);
+}
+
+function updateFlagSummary() {
+  const flags = document.querySelectorAll('.inv-table tbody tr.flagged').length;
+  const el = document.getElementById('flag-summary');
+  if (!el) return;
+  if (flags===0) el.innerHTML='<span style="color:#2ECC71;font-weight:700;">All clear</span>';
+  else el.innerHTML=`<span class="flag-count">${flags} item${flags>1?'s':''} flagged</span> — review before submitting`;
+}
+
+async function submitInventory(unit) {
+  const driver = document.getElementById('driver-name').value.trim();
+  const session = document.getElementById('session-select').value;
+  if (!driver) { showToast('Enter your name before submitting','error'); return; }
+
+  const btn = document.querySelector('.submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const today = todayKey();
+  const items = {};
+  let flagCount = 0;
+
+  ITEMS.forEach((item, idx) => {
+    const qty = parseInt(document.getElementById(`qty-${idx}`)?.value) || 0;
+    const cond = document.getElementById(`cond-${idx}`)?.value || 'Good';
+    const notes = document.getElementById(`notes-${idx}`)?.value || '';
+    const std = getStd(unit, item.desc);
+    const flagged = (std>0&&qty!==std)||cond==='Damaged'||cond==='Missing';
+    if (flagged) flagCount++;
+    items[item.desc] = {qty, cond, notes, flagged};
+  });
+
+  const timestamp = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+  try {
+    await apiCall('submitInventory', { date:today, unit, driver, session, timestamp, flagCount, items });
+    if (!submissions[today]) submissions[today]={};
+    submissions[today][unit] = { driver, session, timestamp, flagCount, items, submitted:true };
+    localStorage.setItem('scs_submissions', JSON.stringify(submissions));
+    showToast(`Submitted! ${flagCount>0?flagCount+' item(s) flagged.':'All clear.'}`, 'success');
+  } catch(e) {
+    showToast('Saved locally — will sync when online','success');
+    if (!submissions[today]) submissions[today]={};
+    submissions[today][unit] = { driver, session, timestamp, flagCount, items, submitted:true };
+    localStorage.setItem('scs_submissions', JSON.stringify(submissions));
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit';
+}
+
+// ── MANAGER VIEW ───────────────────────────────────────────────────────────
+function renderManagerView() {
+  const today = todayKey();
+  const todaySubs = submissions[today] || {};
+  const submitted = UNITS.filter(u => todaySubs[u]);
+  const flagged = UNITS.filter(u => todaySubs[u] && todaySubs[u].flagCount>0);
+
+  let html = `
+    <div class="mgr-header">
+      <div><h2>Manager Dashboard</h2><p>${formatDate(today)}</p></div>
+      <div class="mgr-tabs">
+        <button class="mgr-tab ${mgrActiveTab==='dashboard'?'active':''}" onclick="switchMgrTab('dashboard')">Daily Overview</button>
+        <button class="mgr-tab ${mgrActiveTab==='inventory'?'active':''}" onclick="switchMgrTab('inventory')">Inventory</button>
+        <button class="mgr-tab ${mgrActiveTab==='standards'?'active':''}" onclick="switchMgrTab('standards')">Standard Counts</button>
+      </div>
+    </div>`;
+
+  if (mgrActiveTab==='dashboard') {
+    html += `<div class="stats-row">
+      <div class="stat-card"><div class="num orange">${UNITS.length}</div><div class="lbl">Total Units</div></div>
+      <div class="stat-card"><div class="num green">${submitted.length}</div><div class="lbl">Submitted Today</div></div>
+      <div class="stat-card"><div class="num" style="color:#999">${UNITS.length-submitted.length}</div><div class="lbl">Pending</div></div>
+      <div class="stat-card"><div class="num red">${flagged.length}</div><div class="lbl">Units Flagged</div></div>
+    </div><div class="submission-grid">`;
+
+    UNITS.forEach(unit => {
+      const sub = todaySubs[unit];
+      if (sub) {
+        const cls = sub.flagCount>0?'flagged':'submitted';
+        const badge = sub.flagCount>0?'flagged':'submitted';
+        const badgeText = sub.flagCount>0?`${sub.flagCount} Flag${sub.flagCount>1?'s':''}`:'Clear';
+        html += `<div class="sub-card ${cls}">
+          <div class="sub-card-header"><div class="sub-card-unit">${unit}</div><span class="sub-badge ${badge}">${badgeText}</span></div>
+          <div class="sub-card-meta">Driver: <strong>${sub.driver}</strong> &nbsp;·&nbsp; ${sub.session==='start'?'Start of Day':'End of Day'} &nbsp;·&nbsp; ${sub.timestamp}</div>
+          ${sub.flagCount>0?`<div class="sub-flags">⚠️ ${sub.flagCount} item(s) need attention</div>`:'<div style="font-size:12px;color:#2ECC71;font-weight:600;">✅ All counts match</div>'}
+        </div>`;
+      } else {
+        html += `<div class="sub-card pending">
+          <div class="sub-card-header"><div class="sub-card-unit">${unit}</div><span class="sub-badge pending">Pending</span></div>
+          <div class="sub-card-meta" style="color:#bbb;">No submission yet today</div>
+        </div>`;
+      }
+    });
+
+    html += `</div>`;
+
+    if (flagged.length>0) {
+      html += `<div class="mgr-inv-wrap">
+        <div class="mgr-inv-header"><h3>⚠️ Flagged Items — ${formatDate(today)}</h3></div>
+        <table class="mgr-table"><thead><tr>
+          <th>Unit</th><th>Driver</th><th>Item</th>
+          <th class="center">Standard</th><th class="center">Submitted</th>
+          <th>Condition</th><th>Notes</th>
+        </tr></thead><tbody>`;
+      flagged.forEach(unit => {
+        const sub = todaySubs[unit];
+        ITEMS.forEach(item => {
+          const d = sub.items[item.desc];
+          if (d&&d.flagged) {
+            const std = getStd(unit, item.desc);
+            html += `<tr class="flagged">
+              <td><strong>${unit}</strong></td><td>${sub.driver}</td>
+              <td>${item.code?`<span class="code-badge">${item.code}</span> `:''}${item.desc}</td>
+              <td class="center"><strong>${std||'—'}</strong></td>
+              <td class="center"><strong>${d.qty}</strong></td>
+              <td><span style="color:${d.cond==='Damaged'||d.cond==='Missing'?'#FF4444':'#F39C12'};font-weight:600">${d.cond}</span></td>
+              <td>${d.notes||'—'}</td>
+            </tr>`;
+          }
+        });
+      });
+      html += `</tbody></table></div>`;
+    }
+
+  } else if (mgrActiveTab==='inventory') {
+    const lastSub = getLastSubmission(mgrSelectedUnit);
+    html += `<div class="mgr-inv-wrap">
+      <div class="mgr-inv-header">
+        <h3>Unit Inventory</h3>
+        <select onchange="mgrSelectedUnit=this.value;renderManagerView()">
+          ${UNITS.map(u=>`<option ${u===mgrSelectedUnit?'selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+      <table class="mgr-table"><thead><tr>
+        <th>Code</th><th>Description</th>
+        <th class="center">Standard</th><th class="center">Last Count</th>
+        <th>Condition</th><th>Notes</th>
+      </tr></thead><tbody>`;
+
+    let currentCat = null;
+    ITEMS.forEach(item => {
+      if (item.cat!==currentCat) {
+        currentCat=item.cat;
+        html+=`<tr style="background:#f8f8f8;"><td colspan="6" style="padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--orange);">${item.cat==='Sign'?'SIGNS':'EQUIPMENT'}</td></tr>`;
+      }
+      const std = getStd(mgrSelectedUnit, item.desc);
+      const d = lastSub ? lastSub.items[item.desc] : null;
+      html += `<tr ${d&&d.flagged?'class="flagged"':''}>
+        <td>${item.code?`<span class="code-badge">${item.code}</span>`:'—'}</td>
+        <td><strong>${item.desc}</strong></td>
+        <td class="center">${std>0?`<strong>${std}</strong>`:'—'}</td>
+        <td class="center">${d?`<strong>${d.qty}</strong>`:'<span style="color:#ccc">—</span>'}</td>
+        <td>${d?`<span style="color:${d.cond==='Damaged'?'#FF4444':d.cond==='Fair'?'#F39C12':'#2ECC71'};font-weight:600">${d.cond}</span>`:'—'}</td>
+        <td>${d?(d.notes||'—'):'—'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+  } else if (mgrActiveTab==='standards') {
+    html += `<div class="mgr-inv-wrap">
+      <div class="mgr-inv-header">
+        <h3>Edit Standard Counts</h3>
+        <select onchange="mgrSelectedUnit=this.value;renderManagerView()">
+          ${UNITS.map(u=>`<option ${u===mgrSelectedUnit?'selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+      <table class="mgr-table"><thead><tr>
+        <th>Code</th><th>Description</th><th class="center">Standard Count</th>
+      </tr></thead><tbody>`;
+    let currentCat = null;
+    ITEMS.forEach((item,idx) => {
+      if (item.cat!==currentCat) {
+        currentCat=item.cat;
+        html+=`<tr style="background:#f8f8f8;"><td colspan="3" style="padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--orange);">${item.cat==='Sign'?'SIGNS':'EQUIPMENT'}</td></tr>`;
+      }
+      const std = getStd(mgrSelectedUnit, item.desc);
+      html += `<tr>
+        <td>${item.code?`<span class="code-badge">${item.code}</span>`:'—'}</td>
+        <td><strong>${item.desc}</strong></td>
+        <td><input class="edit-std" type="number" min="0" id="std-${idx}" value="${std}" placeholder="0"></td>
+      </tr>`;
+    });
+    html += `</tbody></table>
+      <button class="save-std-btn" onclick="saveStandardCounts()">Save Standards for ${mgrSelectedUnit}</button>
+    </div>`;
+  }
+
+  document.getElementById('manager-view').innerHTML = html;
+}
+
+function switchMgrTab(tab) { mgrActiveTab=tab; renderManagerView(); }
+
+async function saveStandardCounts() {
+  if (!standardCounts[mgrSelectedUnit]) standardCounts[mgrSelectedUnit]={};
+  const rows = [['Unit','Description','Qty']];
+  ITEMS.forEach((item,idx) => {
+    const val = parseInt(document.getElementById(`std-${idx}`)?.value)||0;
+    if (val>0) { standardCounts[mgrSelectedUnit][item.desc]=val; rows.push([mgrSelectedUnit,item.desc,val]); }
+    else delete standardCounts[mgrSelectedUnit][item.desc];
+  });
+  localStorage.setItem('scs_standards', JSON.stringify(standardCounts));
+  try {
+    await apiCall('saveStandards', { rows });
+    showToast(`Standards saved for ${mgrSelectedUnit}`, 'success');
+  } catch(e) {
+    showToast('Saved locally','success');
+  }
+}
+
+function getLastSubmission(unit) {
+  const keys = Object.keys(submissions).sort().reverse();
+  for (const key of keys) { if (submissions[key][unit]) return submissions[key][unit]; }
+  return null;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr+'T12:00:00');
+  return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
