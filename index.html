@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --orange: #E8521A; --dark: #1A1A1A; --gray: #2B2B2B; --mid: #444;
+    --orange: #E8521A; --dark: #1A1A1A; --gray: #2B2B2B;
     --light: #F5F5F5; --white: #fff; --red: #FF4444; --red-bg: #FFE8E8;
     --green: #2ECC71; --green-bg: #E8F8F0; --yellow: #F39C12;
     --yellow-bg: #FEF9E7; --border: #E0E0E0; --font: 'Segoe UI', system-ui, sans-serif;
@@ -32,14 +32,14 @@
 
   #app { display:none; min-height:100vh; background:#F0F0F0; }
   .topbar { background:var(--dark); padding:0 20px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-  .topbar-brand { font-size:16px; font-weight:800; color:var(--orange); letter-spacing:-0.5px; }
+  .topbar-brand { font-size:16px; font-weight:800; color:var(--orange); }
   .topbar-unit { font-size:13px; color:#aaa; font-weight:600; }
   .topbar-logout { background:none; border:1px solid #555; color:#aaa; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-family:var(--font); }
   .topbar-logout:hover { border-color:var(--orange); color:var(--orange); }
 
   #crew-view { padding:16px; max-width:900px; margin:0 auto; }
   .daily-header { background:var(--white); border-radius:10px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .daily-header-left h2 { font-size:18px; font-weight:800; color:var(--dark); }
+  .daily-header-left h2 { font-size:18px; font-weight:800; }
   .daily-header-left p { font-size:13px; color:#888; margin-top:2px; }
   .daily-meta { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   .meta-field { display:flex; flex-direction:column; gap:4px; }
@@ -60,8 +60,7 @@
   .inv-table tbody tr.flagged { background:var(--red-bg) !important; }
   .inv-table td { padding:11px 14px; font-size:14px; vertical-align:middle; }
   .code-badge { display:inline-block; background:var(--orange); color:white; font-size:10px; font-weight:800; letter-spacing:1px; padding:3px 7px; border-radius:4px; }
-  .desc-cell .desc { font-weight:600; font-size:14px; }
-  .std-qty { text-align:center; font-weight:700; font-size:15px; color:var(--mid); }
+  .std-qty { text-align:center; font-weight:700; font-size:15px; color:#444; }
   .qty-input { width:60px; padding:7px 8px; border:2px solid var(--border); border-radius:6px; text-align:center; font-size:15px; font-weight:700; font-family:var(--font); color:var(--dark); display:block; margin:0 auto; }
   .qty-input:focus { outline:none; border-color:var(--orange); }
   .qty-input.over { border-color:var(--red); background:var(--red-bg); }
@@ -74,6 +73,24 @@
   .notes-input:focus { outline:none; border-color:var(--orange); }
   .flag-indicator { font-size:18px; text-align:center; }
 
+  /* Custom items */
+  .custom-section { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-top:4px; }
+  .custom-header { background:var(--gray); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
+  .custom-header span { color:white; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+  .add-btn { background:var(--orange); color:white; border:none; width:32px; height:32px; border-radius:6px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:var(--font); line-height:1; }
+  .custom-items { padding:8px 0; }
+  .custom-item { display:flex; gap:8px; align-items:center; padding:8px 14px; border-bottom:1px solid var(--border); }
+  .custom-item:last-child { border-bottom:none; }
+  .custom-desc { flex:1; padding:7px 10px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); color:var(--dark); }
+  .custom-desc:focus { outline:none; border-color:var(--orange); }
+  .custom-qty { width:60px; padding:7px 8px; border:2px solid var(--border); border-radius:6px; text-align:center; font-size:14px; font-weight:700; font-family:var(--font); }
+  .custom-qty:focus { outline:none; border-color:var(--orange); }
+  .custom-cond { padding:7px 8px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); background:white; }
+  .custom-notes { flex:1; padding:7px 8px; border:2px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font); }
+  .remove-btn { background:none; border:none; color:#ccc; font-size:20px; cursor:pointer; padding:0 4px; line-height:1; }
+  .remove-btn:hover { color:var(--red); }
+  .empty-custom { padding:16px; text-align:center; color:#bbb; font-size:13px; }
+
   .submit-bar { position:sticky; bottom:0; background:var(--dark); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:20px; border-radius:10px 10px 0 0; }
   .submit-status { font-size:13px; color:#aaa; }
   .submit-status .flag-count { color:var(--red); font-weight:700; }
@@ -83,7 +100,7 @@
 
   #manager-view { padding:16px; max-width:1400px; margin:0 auto; }
   .mgr-header { background:var(--white); border-radius:10px; padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .mgr-header h2 { font-size:20px; font-weight:800; color:var(--dark); }
+  .mgr-header h2 { font-size:20px; font-weight:800; }
   .mgr-header p { font-size:13px; color:#888; margin-top:3px; }
   .mgr-tabs { display:flex; gap:8px; flex-wrap:wrap; }
   .mgr-tab { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; border:2px solid var(--border); background:var(--white); color:#666; font-family:var(--font); transition:all 0.2s; }
@@ -91,7 +108,7 @@
 
   .stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px; }
   .stat-card { background:var(--white); border-radius:10px; padding:16px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .stat-card .num { font-size:32px; font-weight:800; color:var(--dark); line-height:1; }
+  .stat-card .num { font-size:32px; font-weight:800; line-height:1; }
   .stat-card .num.orange { color:var(--orange); }
   .stat-card .num.red { color:var(--red); }
   .stat-card .num.green { color:var(--green); }
@@ -103,8 +120,8 @@
   .sub-card.flagged { border-left-color:var(--red); }
   .sub-card.pending { border-left-color:#ccc; }
   .sub-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .sub-card-unit { font-size:16px; font-weight:800; color:var(--dark); }
-  .sub-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:0.5px; }
+  .sub-card-unit { font-size:16px; font-weight:800; }
+  .sub-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
   .sub-badge.submitted { background:var(--green-bg); color:#1a7a46; }
   .sub-badge.flagged { background:var(--red-bg); color:#b71c1c; }
   .sub-badge.pending { background:#f0f0f0; color:#999; }
@@ -134,12 +151,6 @@
   .toast.success { border-left:4px solid var(--green); }
   .toast.error { border-left:4px solid var(--red); }
   .hidden { display:none !important; }
-
-  @media (max-width:600px) {
-    .inv-table thead th:nth-child(5), .inv-table td:nth-child(5) { display:none; }
-    .daily-meta { flex-direction:column; align-items:flex-start; }
-    .meta-field input, .meta-field select { width:100%; }
-  }
 </style>
 </head>
 <body>
@@ -205,11 +216,7 @@ const ITEMS = [
   {cat:"Sign", code:"RC",     desc:"Road Closed"},
   {cat:"Sign", code:"RCA",    desc:"Road Closed Ahead"},
   {cat:"Sign", code:"",       desc:"Left Overlays"},
- 
-  {cat:"Equipment", code:"",  desc:"Cones 7lbs"},
-  
- 
-  
+  {cat:"Equipment", code:"",  desc:"Cones"},
   {cat:"Equipment", code:"",  desc:"Stands"},
   {cat:"Equipment", code:"",  desc:"Rumble Strips"},
   {cat:"Equipment", code:"",  desc:"PVC Pole / Stop Paddle Pole"},
@@ -224,14 +231,11 @@ let currentUser = null;
 let loginMode = 'crew';
 let mgrActiveTab = 'dashboard';
 let mgrSelectedUnit = UNITS[0];
+let customItems = [];
 
-// ── API CALLS ──────────────────────────────────────────────────────────────
 async function apiCall(action, data={}) {
   const payload = { action, ...data };
-  const res = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+  const res = await fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) });
   return await res.json();
 }
 
@@ -240,15 +244,13 @@ async function loadStandards() {
     const res = await apiCall('getStandards');
     standardCounts = {};
     if (res.standards && res.standards.length > 1) {
-      const rows = res.standards;
-      for (let i = 1; i < rows.length; i++) {
-        const [unit, desc, qty] = rows[i];
+      for (let i = 1; i < res.standards.length; i++) {
+        const [unit, desc, qty] = res.standards[i];
         if (!standardCounts[unit]) standardCounts[unit] = {};
         standardCounts[unit][desc] = parseInt(qty) || 0;
       }
     }
   } catch(e) {
-    console.log('Using local standards');
     standardCounts = JSON.parse(localStorage.getItem('scs_standards') || '{}');
   }
 }
@@ -259,14 +261,18 @@ async function loadSubmissions() {
     submissions = {};
     if (res.submissions && res.submissions.length > 1) {
       for (let i = 1; i < res.submissions.length; i++) {
-        const [date, unit, driver, session, timestamp, flagCount, itemsJson] = res.submissions[i];
+        const row = res.submissions[i];
+        const date = row[0], unit = row[1], driver = row[2], session = row[3];
+        const timestamp = row[4], flagCount = row[5];
+        const items = {};
+        // Parse columns from index 6 onward: desc, code, qty, cond, notes, flagged per item
+        for (let j = 6; j < row.length; j += 6) {
+          if (row[j]) {
+            items[row[j]] = { code:row[j+1], qty:row[j+2], cond:row[j+3], notes:row[j+4], flagged:row[j+5]==='YES' };
+          }
+        }
         if (!submissions[date]) submissions[date] = {};
-        submissions[date][unit] = {
-          driver, session, timestamp,
-          flagCount: parseInt(flagCount) || 0,
-          items: JSON.parse(itemsJson || '{}'),
-          submitted: true
-        };
+        submissions[date][unit] = { driver, session, timestamp, flagCount:parseInt(flagCount)||0, items, submitted:true };
       }
     }
   } catch(e) {
@@ -274,15 +280,9 @@ async function loadSubmissions() {
   }
 }
 
-function todayKey() {
-  return new Date().toISOString().split('T')[0];
-}
+function todayKey() { return new Date().toISOString().split('T')[0]; }
+function getStd(unit, desc) { return (standardCounts[unit] && standardCounts[unit][desc]) || 0; }
 
-function getStd(unit, desc) {
-  return (standardCounts[unit] && standardCounts[unit][desc]) || 0;
-}
-
-// ── LOGIN ──────────────────────────────────────────────────────────────────
 function setLoginMode(mode) {
   loginMode = mode;
   document.querySelectorAll('.login-tab').forEach((t,i) => {
@@ -298,7 +298,6 @@ async function doLogin() {
   const loading = document.getElementById('login-loading');
   err.style.display = 'none';
   loading.style.display = 'block';
-
   if (loginMode === 'manager') {
     const pass = document.getElementById('mgr-pass-input').value;
     if (pass === MANAGER_PASS) {
@@ -314,7 +313,7 @@ async function doLogin() {
     }
   } else {
     const truck = document.getElementById('truck-input').value.trim();
-    const match = UNITS.find(u => u.replace(/\D/g,'') === truck || u === truck);
+    const match = UNITS.find(u => u.replace(/\D/g,'')===truck || u===truck);
     if (match) {
       currentUser = match;
       await loadStandards();
@@ -331,6 +330,7 @@ async function doLogin() {
 
 function doLogout() {
   currentUser = null;
+  customItems = [];
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('truck-input').value = '';
@@ -349,11 +349,11 @@ function showApp() {
     document.getElementById('topbar-unit').textContent = currentUser;
     document.getElementById('manager-view').classList.add('hidden');
     document.getElementById('crew-view').classList.remove('hidden');
+    customItems = [];
     renderCrewView(currentUser);
   }
 }
 
-// ── CREW VIEW ──────────────────────────────────────────────────────────────
 function renderCrewView(unit) {
   const today = todayKey();
   const existing = (submissions[today] && submissions[today][unit]) || null;
@@ -367,7 +367,7 @@ function renderCrewView(unit) {
       <div class="daily-meta">
         <div class="meta-field">
           <label>Driver Name</label>
-          <input type="text" id="driver-name" placeholder="Your name" value="${existing ? existing.driver : ''}">
+          <input type="text" id="driver-name" placeholder="Your name" value="${existing?existing.driver:''}">
         </div>
         <div class="meta-field">
           <label>Session</label>
@@ -387,14 +387,14 @@ function renderCrewView(unit) {
       currentCat = item.cat;
       if (idx > 0) html += `</tbody></table>`;
       html += `<div class="section-label"><span>${item.cat==='Sign'?'Signs':'Equipment'}</span></div>
-               <table class="inv-table">
-               <thead><tr>
-                 <th>Code</th><th>Description</th>
-                 <th class="center">Standard</th>
-                 <th class="center">Count</th>
-                 <th>Condition</th><th>Notes</th>
-                 <th class="center">⚑</th>
-               </tr></thead><tbody>`;
+        <table class="inv-table">
+        <thead><tr>
+          <th>Code</th><th>Description</th>
+          <th class="center">Standard</th>
+          <th class="center">Count</th>
+          <th>Condition</th><th>Notes</th>
+          <th class="center">⚑</th>
+        </tr></thead><tbody>`;
     }
 
     const std = getStd(unit, item.desc);
@@ -405,10 +405,10 @@ function renderCrewView(unit) {
 
     html += `<tr id="row-${idx}">
       <td>${item.code?`<span class="code-badge">${item.code}</span>`:'<span style="color:#ccc;font-size:12px;">—</span>'}</td>
-      <td class="desc-cell"><span class="desc">${item.desc}</span></td>
+      <td><span style="font-weight:600">${item.desc}</span></td>
       <td class="std-qty">${std>0?std:'—'}</td>
       <td><input class="qty-input" type="number" min="0" id="qty-${idx}" value="${qty}"
-          data-std="${std}" data-idx="${idx}" onchange="checkQty(${idx})" oninput="checkQty(${idx})"></td>
+          data-std="${std}" onchange="checkQty(${idx})" oninput="checkQty(${idx})"></td>
       <td><select class="cond-select ${cond==='Damaged'?'damaged':''}" id="cond-${idx}" onchange="checkCond(${idx})">
         <option ${cond==='Good'?'selected':''}>Good</option>
         <option ${cond==='Fair'?'selected':''}>Fair</option>
@@ -420,7 +420,22 @@ function renderCrewView(unit) {
     </tr>`;
   });
 
-  html += `</tbody></table></form>
+  html += `</tbody></table></form>`;
+
+  // Custom items section
+  html += `
+    <div class="section-label"><span>Additional Equipment</span></div>
+    <div class="custom-section">
+      <div class="custom-header">
+        <span>Custom / Job-Specific Items</span>
+        <button class="add-btn" onclick="addCustomItem()" title="Add item">+</button>
+      </div>
+      <div class="custom-items" id="custom-items-list">
+        <div class="empty-custom" id="custom-empty">Tap + to add items like Lane Shift, PTMS Board, Turning Lane Closure, etc.</div>
+      </div>
+    </div>`;
+
+  html += `
     <div class="submit-bar">
       <div class="submit-status"><span id="flag-summary">Fill in your counts above</span></div>
       <button class="submit-btn" onclick="submitInventory('${unit}')">Submit</button>
@@ -428,6 +443,46 @@ function renderCrewView(unit) {
 
   document.getElementById('crew-view').innerHTML = html;
   ITEMS.forEach((_, idx) => checkQty(idx));
+  renderCustomItems();
+}
+
+function addCustomItem() {
+  customItems.push({ desc:'', qty:0, cond:'Good', notes:'' });
+  renderCustomItems();
+}
+
+function removeCustomItem(idx) {
+  customItems.splice(idx, 1);
+  renderCustomItems();
+}
+
+function renderCustomItems() {
+  const list = document.getElementById('custom-items-list');
+  const empty = document.getElementById('custom-empty');
+  if (!list) return;
+
+  if (customItems.length === 0) {
+    list.innerHTML = `<div class="empty-custom" id="custom-empty">Tap + to add items like Lane Shift, PTMS Board, Turning Lane Closure, etc.</div>`;
+    return;
+  }
+
+  list.innerHTML = customItems.map((item, idx) => `
+    <div class="custom-item">
+      <input class="custom-desc" type="text" placeholder="Item description (e.g. PTMS Board)" 
+             value="${item.desc}" onchange="customItems[${idx}].desc=this.value">
+      <input class="custom-qty" type="number" min="0" placeholder="Qty" 
+             value="${item.qty||''}" onchange="customItems[${idx}].qty=parseInt(this.value)||0">
+      <select class="custom-cond" onchange="customItems[${idx}].cond=this.value">
+        <option ${item.cond==='Good'?'selected':''}>Good</option>
+        <option ${item.cond==='Fair'?'selected':''}>Fair</option>
+        <option ${item.cond==='Damaged'?'selected':''}>Damaged</option>
+        <option ${item.cond==='Missing'?'selected':''}>Missing</option>
+      </select>
+      <input class="custom-notes" type="text" placeholder="Notes..." 
+             value="${item.notes}" onchange="customItems[${idx}].notes=this.value">
+      <button class="remove-btn" onclick="removeCustomItem(${idx})">×</button>
+    </div>
+  `).join('');
 }
 
 function checkQty(idx) {
@@ -445,15 +500,15 @@ function checkQty(idx) {
   if (std>0 && val<std) { qtyEl.classList.add('under'); flagEl.textContent='⚠️'; flagged=true; }
   else if (std>0 && val>std) { qtyEl.classList.add('over'); flagEl.textContent='❗'; flagged=true; }
   else if (std>0) { qtyEl.classList.add('match'); flagEl.textContent='✅'; }
-  else { flagEl.textContent=''; }
+  else flagEl.textContent='';
   if (cond==='Damaged'||cond==='Missing') flagged=true;
   if (flagged) rowEl.classList.add('flagged');
   updateFlagSummary();
 }
 
 function checkCond(idx) {
-  const condEl = document.getElementById(`cond-${idx}`);
-  condEl.classList.toggle('damaged', condEl.value==='Damaged'||condEl.value==='Missing');
+  const c = document.getElementById(`cond-${idx}`);
+  c.classList.toggle('damaged', c.value==='Damaged'||c.value==='Missing');
   checkQty(idx);
 }
 
@@ -478,6 +533,7 @@ async function submitInventory(unit) {
   const items = {};
   let flagCount = 0;
 
+  // Standard items
   ITEMS.forEach((item, idx) => {
     const qty = parseInt(document.getElementById(`qty-${idx}`)?.value) || 0;
     const cond = document.getElementById(`cond-${idx}`)?.value || 'Good';
@@ -485,7 +541,16 @@ async function submitInventory(unit) {
     const std = getStd(unit, item.desc);
     const flagged = (std>0&&qty!==std)||cond==='Damaged'||cond==='Missing';
     if (flagged) flagCount++;
-    items[item.desc] = {qty, cond, notes, flagged};
+    items[item.desc] = { code:item.code, qty, cond, notes, flagged };
+  });
+
+  // Custom items
+  customItems.forEach((item, idx) => {
+    if (item.desc.trim()) {
+      const flagged = item.cond==='Damaged'||item.cond==='Missing';
+      if (flagged) flagCount++;
+      items[`CUSTOM: ${item.desc}`] = { code:'CUSTOM', qty:item.qty, cond:item.cond, notes:item.notes, flagged };
+    }
   });
 
   const timestamp = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
@@ -496,6 +561,7 @@ async function submitInventory(unit) {
     submissions[today][unit] = { driver, session, timestamp, flagCount, items, submitted:true };
     localStorage.setItem('scs_submissions', JSON.stringify(submissions));
     showToast(`Submitted! ${flagCount>0?flagCount+' item(s) flagged.':'All clear.'}`, 'success');
+    customItems = [];
   } catch(e) {
     showToast('Saved locally — will sync when online','success');
     if (!submissions[today]) submissions[today]={};
@@ -507,7 +573,6 @@ async function submitInventory(unit) {
   btn.textContent = 'Submit';
 }
 
-// ── MANAGER VIEW ───────────────────────────────────────────────────────────
 function renderManagerView() {
   const today = todayKey();
   const todaySubs = submissions[today] || {};
@@ -558,18 +623,17 @@ function renderManagerView() {
         <div class="mgr-inv-header"><h3>⚠️ Flagged Items — ${formatDate(today)}</h3></div>
         <table class="mgr-table"><thead><tr>
           <th>Unit</th><th>Driver</th><th>Item</th>
-          <th class="center">Standard</th><th class="center">Submitted</th>
+          <th class="center">Standard</th><th class="center">Count</th>
           <th>Condition</th><th>Notes</th>
         </tr></thead><tbody>`;
       flagged.forEach(unit => {
         const sub = todaySubs[unit];
-        ITEMS.forEach(item => {
-          const d = sub.items[item.desc];
-          if (d&&d.flagged) {
-            const std = getStd(unit, item.desc);
+        Object.entries(sub.items).forEach(([desc, d]) => {
+          if (d.flagged) {
+            const std = getStd(unit, desc);
             html += `<tr class="flagged">
               <td><strong>${unit}</strong></td><td>${sub.driver}</td>
-              <td>${item.code?`<span class="code-badge">${item.code}</span> `:''}${item.desc}</td>
+              <td>${d.code&&d.code!=='CUSTOM'?`<span class="code-badge">${d.code}</span> `:''}${desc}</td>
               <td class="center"><strong>${std||'—'}</strong></td>
               <td class="center"><strong>${d.qty}</strong></td>
               <td><span style="color:${d.cond==='Damaged'||d.cond==='Missing'?'#FF4444':'#F39C12'};font-weight:600">${d.cond}</span></td>
@@ -613,6 +677,25 @@ function renderManagerView() {
         <td>${d?(d.notes||'—'):'—'}</td>
       </tr>`;
     });
+
+    // Custom items from last submission
+    if (lastSub) {
+      const customEntries = Object.entries(lastSub.items).filter(([k]) => k.startsWith('CUSTOM:'));
+      if (customEntries.length > 0) {
+        html += `<tr style="background:#f8f8f8;"><td colspan="6" style="padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--orange);">ADDITIONAL EQUIPMENT</td></tr>`;
+        customEntries.forEach(([desc, d]) => {
+          html += `<tr ${d.flagged?'class="flagged"':''}>
+            <td><span class="code-badge" style="background:#666">CUSTOM</span></td>
+            <td><strong>${desc.replace('CUSTOM: ','')}</strong></td>
+            <td class="center">—</td>
+            <td class="center"><strong>${d.qty}</strong></td>
+            <td>${d?`<span style="color:${d.cond==='Damaged'?'#FF4444':d.cond==='Fair'?'#F39C12':'#2ECC71'};font-weight:600">${d.cond}</span>`:'—'}</td>
+            <td>${d.notes||'—'}</td>
+          </tr>`;
+        });
+      }
+    }
+
     html += `</tbody></table></div>`;
 
   } else if (mgrActiveTab==='standards') {
