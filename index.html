@@ -264,13 +264,8 @@ async function loadSubmissions() {
         const row = res.submissions[i];
         const date = row[0], unit = row[1], driver = row[2], session = row[3];
         const timestamp = row[4], flagCount = row[5];
-        const items = {};
-        // Parse columns from index 6 onward: desc, code, qty, cond, notes, flagged per item
-        for (let j = 6; j < row.length; j += 6) {
-          if (row[j]) {
-            items[row[j]] = { code:row[j+1], qty:row[j+2], cond:row[j+3], notes:row[j+4], flagged:row[j+5]==='YES' };
-          }
-        }
+        let items = {};
+        try { items = JSON.parse(row[6] || '{}'); } catch(e) { items = {}; }
         if (!submissions[date]) submissions[date] = {};
         submissions[date][unit] = { driver, session, timestamp, flagCount:parseInt(flagCount)||0, items, submitted:true };
       }
